@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/chess-difficulty-rating-cbb50e
   workflow_dispatch:
 
 permissions:
