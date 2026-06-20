@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#312e2b" />
+  <title>Chess Practice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-theme="green">
+  <header class="topbar">
+    <h1>Chess Practice</h1>
+    <div class="me">
+      <div class="me-rating"><span id="ratingValue">800</span><small id="myTag">Casual</small></div>
+      <div class="me-meta"><span id="record">0W · 0L · 0D</span><span id="gamesPlayed">0 games</span></div>
+    </div>
+    <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
+  </header>
+
+  <div id="calibBanner" class="calib-banner" style="display:none"></div>
+
+  <main class="layout">
+    <section class="board-area">
+      <div class="board-wrap">
+        <div id="evalBarWrap" class="eval-bar">
+          <div id="evalFill" class="eval-fill"></div>
+          <span id="evalText" class="eval-text">0.0</span>
+        </div>
+        <div id="board" class="board" style="touch-action:none"></div>
+      </div>
+      <div class="board-status">
+        <span id="status" class="status">Loading engine…</span>
+        <span id="thinking" class="thinking" style="visibility:hidden"></span>
+      </div>
+      <div class="captured-row"><span class="cap-label">Captured</span>
+        <span id="capturedTop" class="captured"></span>
+        <span id="capturedBottom" class="captured"></span>
+      </div>
+      <div id="openingName" class="opening"></div>
+
+      <div class="ingame-controls">
+        <button id="hintBtn" class="btn">💡 Hint</button>
+        <button id="undoBtn" class="btn">↩ Takeback</button>
+        <button id="flipBtn" class="btn">⟲ Flip</button>
+        <button id="drawBtn" class="btn">½ Draw</button>
+        <button id="resignBtn" class="btn danger">⚑ Resign</button>
+        <button id="reviewBtn" class="btn primary">🔍 Review</button>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="card">
+        <h2>Opponent</h2>
+        <div class="opp-line"><span id="oppRatingVal" class="opp-rating">800</span>
+          <span id="oppTag" class="tag">Casual</span></div>
+        <div id="playingAs" class="playing-as">You: White</div>
+      </div>
+
+      <div class="card">
+        <h2>Next game</h2>
+        <label class="row">Challenge
+          <select id="challengeSelect">
+            <option value="0">Even (your level)</option>
+            <option value="30">Slight stretch (+30)</option>
+            <option value="75">Push me (+75)</option>
+          </select>
+        </label>
+        <label class="row">Play as
+          <select id="colorSelect">
+            <option value="random">Random</option>
+            <option value="w">White</option>
+            <option value="b">Black</option>
+          </select>
+        </label>
+        <button id="playNext" class="btn primary wide">▶ Play next opponent</button>
+
+        <label class="row slider-row">Custom rating
+          <span id="fineSliderVal" class="slider-val">800</span>
+        </label>
+        <input id="fineSlider" type="range" min="250" max="2800" step="10" value="800" />
+        <button id="newGameBtn" class="btn wide">New game at this rating</button>
+      </div>
+
+      <div class="card">
+        <h2>Rating history</h2>
+        <div id="sparkline" class="sparkline"></div>
+      </div>
+
+      <div class="card">
+        <h2>Moves</h2>
+        <div id="moveList" class="move-list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- promotion picker -->
+  <div id="promoOverlay" class="promo-overlay"></div>
+
+  <!-- result modal -->
+  <div id="resultModal" class="modal">
+    <div class="modal-box">
+      <h2 id="resultTitle">Result</h2>
+      <p id="resultText" class="modal-text"></p>
+      <div class="modal-actions">
+        <button id="rmReview" class="btn">Review game</button>
+        <button id="rmNext" class="btn primary">Next opponent</button>
+        <button id="rmCalNext" class="btn primary" style="display:none">Next placement game</button>
+        <button id="rmClose" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- settings panel -->
+  <div id="settingsPanel" class="panel">
+    <div class="panel-box">
+      <div class="panel-head"><h2>Settings</h2><button id="panelClose" class="icon-btn">✕</button></div>
+      <h3>In-game help</h3>
+      <label class="switch"><input type="checkbox" id="set-hints"> Hints</label>
+      <label class="switch"><input type="checkbox" id="set-evalBar"> Evaluation bar</label>
+      <label class="switch"><input type="checkbox" id="set-takebacks"> Takebacks</label>
+      <label class="switch"><input type="checkbox" id="set-blunderWarning"> Blunder warning</label>
+      <h3>Feel</h3>
+      <label class="switch"><input type="checkbox" id="set-sounds"> Sounds</label>
+      <label class="switch"><input type="checkbox" id="set-legalDots"> Show legal moves</label>
+      <label class="switch"><input type="checkbox" id="set-dark"> Dark mode</label>
+      <label class="row">Board theme
+        <select id="set-theme">
+          <option value="green">Green</option>
+          <option value="brown">Brown</option>
+          <option value="blue">Blue</option>
+          <option value="gray">Gray</option>
+        </select>
+      </label>
+      <h3>Profile</h3>
+      <button id="recalibrateBtn" class="btn wide">Recalibrate rating</button>
+      <button id="resetProfileBtn" class="btn wide danger">Reset profile</button>
+    </div>
+  </div>
+
+  <!-- review / replay panel -->
+  <div id="reviewPanel" class="panel review">
+    <div class="panel-box">
+      <div class="panel-head"><h2>Game Review</h2><button id="reviewClose" class="icon-btn">✕</button></div>
+      <div id="reviewAccuracy" class="review-accuracy"></div>
+      <div class="replay-controls">
+        <button id="replayStart" class="btn">⏮</button>
+        <button id="replayPrev" class="btn">◀</button>
+        <button id="replayNext" class="btn">▶</button>
+        <button id="replayEnd" class="btn">⏭</button>
+        <span id="replayInfo" class="replay-info"></span>
+      </div>
+      <div id="reviewMoves" class="review-moves"></div>
+    </div>
+  </div>
+
+  <!-- chess.js (rules) + Stockfish loaded by engine.js as a worker -->
+  <script src="vendor/chess.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/difficulty.js"></script>
+  <script src="js/rating.js"></script>
+  <script src="js/openings.js"></script>
+  <script src="js/analysis.js"></script>
+  <script src="js/calibration.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
