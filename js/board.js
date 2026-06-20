@@ -55,7 +55,9 @@
     for (var r = 0; r < 8; r++) {
       for (var c = 0; c < 8; c++) {
         var cell = board[r][c];
-        if (cell) pieceAt[cell.square] = cell;
+        // chess.js 0.10.x board() cells are {type,color} with no .square,
+        // so derive the square: row 0 = rank 8, col 0 = file a.
+        if (cell) pieceAt[FILES[c] + (8 - r)] = cell;
       }
     }
 

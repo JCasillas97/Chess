@@ -74,9 +74,11 @@
     if (!g.in_check()) return null;
     var turn = g.turn();
     var b = g.board();
+    var files = 'abcdefgh';
     for (var r = 0; r < 8; r++) for (var c = 0; c < 8; c++) {
       var cell = b[r][c];
-      if (cell && cell.type === 'k' && cell.color === turn) return cell.square;
+      // board() cells have no .square in chess.js 0.10.x; derive it.
+      if (cell && cell.type === 'k' && cell.color === turn) return files[c] + (8 - r);
     }
     return null;
   }
