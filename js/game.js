@@ -476,7 +476,8 @@
   }
 
   function renderCaptured() {
-    var GLYPH = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+    var WHITE_GLYPH = { k: '♔︎', q: '♕︎', r: '♖︎', b: '♗︎', n: '♘︎', p: '♙︎' };
+    var BLACK_GLYPH = { k: '♚︎', q: '♛︎', r: '♜︎', b: '♝︎', n: '♞︎', p: '♟︎' };
     var start = { p: 8, n: 2, b: 2, r: 2, q: 1 };
     var cur = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } };
     var b = game.board();
@@ -487,9 +488,10 @@
     function capturedBy(color) { // pieces of opponent color that are missing
       var opp = color === 'w' ? 'b' : 'w';
       var out = '';
+      var glyphs = opp === 'w' ? WHITE_GLYPH : BLACK_GLYPH;
       ['q', 'r', 'b', 'n', 'p'].forEach(function (t) {
         var missing = start[t] - cur[opp][t];
-        for (var i = 0; i < missing; i++) out += '<span class="cap cap-' + opp + '">' + GLYPH[t] + '</span>';
+        for (var i = 0; i < missing; i++) out += '<span class="cap cap-' + opp + '">' + glyphs[t] + '</span>';
       });
       return out;
     }
@@ -549,7 +551,9 @@
   function promptPromotion(color, cb) {
     var overlay = $('promoOverlay');
     var pieces = ['q', 'r', 'b', 'n'];
-    var GLYPH = { q: '♛', r: '♜', b: '♝', n: '♞' };
+    var GLYPH = color === 'w'
+      ? { q: '♕︎', r: '♖︎', b: '♗︎', n: '♘︎' }
+      : { q: '♛︎', r: '♜︎', b: '♝︎', n: '♞︎' };
     overlay.innerHTML = '';
     pieces.forEach(function (p) {
       var btn = document.createElement('button');

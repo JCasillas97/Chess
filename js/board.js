@@ -7,7 +7,12 @@
 (function (global) {
   'use strict';
 
-  var GLYPH = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+  // Use the distinct white (U+2654-2659) and black (U+265A-265F) code points so
+  // the color is carried by the glyph itself — iOS/Safari ignores CSS color on
+  // the solid chess characters, so a single recolored set renders all-dark.
+  // The trailing ︎ forces text (non-emoji) presentation.
+  var WHITE_GLYPH = { k: '♔︎', q: '♕︎', r: '♖︎', b: '♗︎', n: '♘︎', p: '♙︎' };
+  var BLACK_GLYPH = { k: '♚︎', q: '♛︎', r: '♜︎', b: '♝︎', n: '♞︎', p: '♟︎' };
   var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
   var el, opts;
@@ -76,7 +81,10 @@
 
       var p = pieceAt[s.square];
       var inner = '';
-      if (p) inner = '<span class="pc pc-' + p.color + '">' + GLYPH[p.type] + '</span>';
+      if (p) {
+        var glyph = (p.color === 'w' ? WHITE_GLYPH : BLACK_GLYPH)[p.type];
+        inner = '<span class="pc pc-' + p.color + ' type-' + p.type + '">' + glyph + '</span>';
+      }
       // coordinate labels on edge squares
       var coords = '';
       if (s.rowFirst) coords += '<span class="coord rank">' + s.rank + '</span>';
