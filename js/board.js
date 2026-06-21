@@ -75,11 +75,11 @@
     pcEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
     pcEl.style.zIndex = '5';
     void pcEl.offsetWidth; // force reflow so the start transform is applied
-    pcEl.style.transition = 'transform 0.16s ease-out';
+    pcEl.style.transition = 'transform 0.26s ease-out';
     pcEl.style.transform = 'translate(0,0)';
     setTimeout(function () {
       if (pcEl) { pcEl.style.transition = ''; pcEl.style.transform = ''; pcEl.style.zIndex = ''; }
-    }, 200);
+    }, 320);
   }
 
   function render(animateSpec) {
