@@ -148,8 +148,9 @@ body.mode-puzzle #evalBarWrap { display: none !important; }
 }
 .eval-fill { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: #f4f4f3; transition: height .25s; }
 .eval-text {
-  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
-  text-align: center; font-size: 9px; font-weight: 700; z-index: 2; mix-blend-mode: difference; color: #fff;
+  position: absolute; left: 0; right: 0; top: 4px;
+  text-align: center; font-size: 8px; font-weight: 700; z-index: 2;
+  color: #fff; text-shadow: 0 0 2px #000, 0 0 2px #000, 0 0 2px #000;
 }
 
 .board-status { display: flex; justify-content: space-between; margin: 8px 2px; min-height: 20px; }
@@ -257,4 +258,3 @@ body.dark .rv { color: #222; }
   .sidebar { width: min(92vw, 560px); flex: none; }
   .board { width: min(92vw, 78vh); }
 }
-.white-adv { color: #fff; } .black-adv { color: #fff; }

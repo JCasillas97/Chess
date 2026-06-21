@@ -438,7 +438,8 @@
     var pct = 50 + (clamped / 800) * 50; // white share from bottom
     $('evalFill').style.height = pct + '%';
     $('evalText').textContent = fmtEval(cp);
-    $('evalText').className = cp >= 0 ? 'white-adv' : 'black-adv';
+    // keep the .eval-text class (size/position/outline); don't overwrite it
+    $('evalText').className = 'eval-text';
   }
   function updateEvalBar() {
     if (!Settings.get('evalBar')) { $('evalBarWrap').style.visibility = 'hidden'; return; }
