@@ -130,7 +130,7 @@
     setTimeout(function () {
       var m = applyUci(cur.moves[0]);
       Board.setLastMove(m ? { from: m.from, to: m.to } : null);
-      Board.render();
+      Board.render(m ? { from: m.from, to: m.to } : null);
       busy = false;
       $('pzObjective').textContent = (solverColor === 'w' ? 'White' : 'Black') + ' to move — find the best move';
       setButtons(true);
@@ -167,7 +167,7 @@
 
       var mv = pgame.move(moveObj);
       Board.setLastMove({ from: mv.from, to: mv.to });
-      Board.render();
+      Board.render({ from: mv.from, to: mv.to });
       tone(pgame.in_check() ? 700 : 440, 0.09, pgame.in_check() ? 'triangle' : 'sine');
       solIdx++;
       if (solIdx >= cur.moves.length) { finishSolved(); return; }
@@ -178,7 +178,7 @@
       setTimeout(function () {
         var rm = applyUci(cur.moves[solIdx]); solIdx++;
         Board.setLastMove(rm ? { from: rm.from, to: rm.to } : null);
-        Board.render();
+        Board.render(rm ? { from: rm.from, to: rm.to } : null);
         busy = false;
         if (solIdx >= cur.moves.length) finishSolved();
       }, 350);
@@ -234,7 +234,7 @@
     setTimeout(function () {
       var m = applyUci(cur.moves[0]);
       Board.setLastMove(m ? { from: m.from, to: m.to } : null);
-      Board.render(); busy = false;
+      Board.render(m ? { from: m.from, to: m.to } : null); busy = false;
       $('pzObjective').textContent = (solverColor === 'w' ? 'White' : 'Black') + ' to move — find the best move';
     }, 300);
   }
@@ -253,7 +253,7 @@
       }
       var m = applyUci(cur.moves[i]); i++;
       Board.setLastMove(m ? { from: m.from, to: m.to } : null);
-      Board.render();
+      Board.render(m ? { from: m.from, to: m.to } : null);
       setTimeout(step, 500);
     })();
   }

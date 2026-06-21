@@ -151,8 +151,8 @@
     sans.push(move.san);
     fens.push(game.fen());
     Board.setLastMove(lastMove);
-    Board.setHint(null);
-    Board.render();
+    Board.setHint(null, true);     // clear hint without an extra render
+    Board.render(lastMove);        // animate the piece sliding from -> to
     soundFor(move);
     renderMoveList();
     renderCaptured();

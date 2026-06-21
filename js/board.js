@@ -20,6 +20,7 @@
   var lastMove = null;       // {from, to}
   var hintMove = null;       // {from, to}
   var dragEl = null, dragging = false, dragStart = null, downXY = null;
+  var suppressAnim = false;  // skip the slide animation for the next render (drag drops)
 
   function init(container, options) {
     el = container;
@@ -36,7 +37,7 @@
   function getOrientation() { return orientation; }
   function flip() { setOrientation(orientation === 'w' ? 'b' : 'w'); }
   function setLastMove(m) { lastMove = m; }
-  function setHint(m) { hintMove = m; render(); }
+  function setHint(m, skipRender) { hintMove = m; if (!skipRender) render(); }
   function clearSelection() { selected = null; legalCache = []; }
 
   function orderedSquares() {
@@ -52,7 +53,36 @@
     return sqs;
   }
 
-  function render() {
+  // On-screen grid position (col,row) of a square, honoring orientation.
+  function squareScreen(square) {
+    var f = FILES.indexOf(square[0]);
+    var rank = parseInt(square[1], 10);
+    return (orientation === 'w')
+      ? { col: f, row: 8 - rank }
+      : { col: 7 - f, row: rank - 1 };
+  }
+
+  // Slide the piece now sitting on spec.to in from its old square (spec.from).
+  function animateMove(spec) {
+    if (!spec || !spec.from || !spec.to || spec.from === spec.to) return;
+    var pcEl = el.querySelector('[data-square="' + spec.to + '"] .pc');
+    if (!pcEl) return;
+    var size = el.clientWidth / 8;
+    if (!size) return;
+    var a = squareScreen(spec.from), b = squareScreen(spec.to);
+    var dx = (a.col - b.col) * size, dy = (a.row - b.row) * size;
+    pcEl.style.transition = 'none';
+    pcEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    pcEl.style.zIndex = '5';
+    void pcEl.offsetWidth; // force reflow so the start transform is applied
+    pcEl.style.transition = 'transform 0.16s ease-out';
+    pcEl.style.transform = 'translate(0,0)';
+    setTimeout(function () {
+      if (pcEl) { pcEl.style.transition = ''; pcEl.style.transform = ''; pcEl.style.zIndex = ''; }
+    }, 200);
+  }
+
+  function render(animateSpec) {
     if (!el) return;
     var board = opts.getBoard();         // chess.js board() : 8x8, rank8 first
     var checkSq = opts.inCheckSquare ? opts.inCheckSquare() : null;
@@ -93,6 +123,8 @@
       html += '<div class="' + cls + '" data-square="' + s.square + '">' + inner + coords + '</div>';
     });
     el.innerHTML = html;
+    if (animateSpec && !suppressAnim) animateMove(animateSpec);
+    suppressAnim = false;
   }
 
   function legalFor(square) {
@@ -188,6 +220,7 @@
     if (wasDragging) {
       var to = squareFromPoint(e.clientX, e.clientY);
       if (to && to !== from && legalFor(to)) {
+        suppressAnim = true; // user already dragged the piece there; don't slide it again
         attempt(from, to);
       } else {
         render(); // snap back, keep selection (dots still shown)
