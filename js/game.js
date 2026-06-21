@@ -17,6 +17,7 @@
   var gameOver = false;
   var thinking = false;
   var boardActive = true;         // false while Puzzle mode owns the board
+  var engineSeq = 0;              // bumped to cancel an in-flight engine move (e.g. on takeback)
 
   var sans = [];                  // SAN per ply
   var fens = [game.fen()];        // position after each ply (fens[0] = start)
@@ -162,13 +163,18 @@
   }
 
   function engineMove() {
-    if (gameOver || !boardActive) return;
+    // never move on the player's turn — guards stray/late triggers (e.g. the
+    // black-opening setTimeout firing after a new game or takeback).
+    if (gameOver || !boardActive || game.turn() === playerColor) return;
     setThinking(true, 'Opponent is thinking…');
     var cfg = Difficulty.ratingToConfig(oppRating);
     var fen = game.fen();
+    var mySeq = engineSeq; // if this changes (e.g. takeback), drop this move
+
+    var stale = function () { return !boardActive || mySeq !== engineSeq; };
 
     var applyUci = function (uci) {
-      if (!boardActive) { setThinking(false); return; } // switched to puzzles
+      if (stale()) { return; } // switched modes or taken back
       var move = null;
       if (uci) {
         move = game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] || 'q' });
@@ -184,7 +190,7 @@
       // deliberate weak move — select AND apply together after a short delay so
       // the engine doesn't move instantly (and game state never desyncs).
       setTimeout(function () {
-        if (!boardActive) { setThinking(false); return; }
+        if (stale()) return;
         var m = randomMove();
         setThinking(false);
         if (m) commitMove(m);
@@ -284,16 +290,20 @@
   }
 
   function takeback() {
-    if (!Settings.get('takebacks') || thinking || mode === 'calibration') return;
-    if (replayActive) return;
-    // undo back to the player's turn (usually two plies)
-    var undone = false;
+    if (!Settings.get('takebacks') || mode === 'calibration' || replayActive) return;
+    if (sans.length === 0) return;
+    // cancel any engine move currently being computed so it can't land on the
+    // reverted position, and allow takeback even while it's "thinking".
+    engineSeq++;
+    setThinking(false);
+    // undo the last ply, then keep undoing until it's the player's turn again
+    // (handles both "engine just replied" -> 2 plies and "engine still thinking
+    // after your move" -> 1 ply).
+    game.undo(); sans.pop(); fens.pop();
     var guard = 0;
-    while (sans.length > 0 && guard++ < 4) {
-      game.undo(); sans.pop(); fens.pop(); undone = true;
-      if (game.turn() === playerColor && !gameOver) break;
+    while (sans.length > 0 && game.turn() !== playerColor && guard++ < 4) {
+      game.undo(); sans.pop(); fens.pop();
     }
-    if (!undone) return;
     gameOver = false;
     lastMove = sans.length ? deriveLastMove() : null;
     Board.setLastMove(lastMove);
@@ -313,6 +323,7 @@
   /* ----------------------------------------------------------- new game */
   function startGame(opponentRating, colorChoice, gameMode) {
     mode = gameMode || 'normal';
+    engineSeq++; // invalidate any engine move still being computed
     oppRating = Difficulty.clamp(Math.round(opponentRating), 250, 2800);
     if (colorChoice === 'random') playerColor = Math.random() < 0.5 ? 'w' : 'b';
     else playerColor = colorChoice || 'w';
