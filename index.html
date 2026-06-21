@@ -17,6 +17,11 @@
     <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
   </header>
 
+  <nav class="tabs">
+    <button id="tabPlay" class="tab active">♟ Play</button>
+    <button id="tabPuzzles" class="tab">🧩 Puzzles</button>
+  </nav>
+
   <div id="calibBanner" class="calib-banner" style="display:none"></div>
 
   <main class="layout">
@@ -28,17 +33,21 @@
         </div>
         <div id="board" class="board" style="touch-action:none"></div>
       </div>
-      <div class="board-status">
+      <div class="board-status play-only">
         <span id="status" class="status">Loading engine…</span>
         <span id="thinking" class="thinking" style="visibility:hidden"></span>
       </div>
-      <div class="captured-row"><span class="cap-label">Captured</span>
+      <div class="pz-banner puzzle-only">
+        <span id="pzObjective" class="pz-objective">—</span>
+        <span id="pzFeedback" class="pz-feedback"></span>
+      </div>
+      <div class="captured-row play-only"><span class="cap-label">Captured</span>
         <span id="capturedTop" class="captured"></span>
         <span id="capturedBottom" class="captured"></span>
       </div>
-      <div id="openingName" class="opening"></div>
+      <div id="openingName" class="opening play-only"></div>
 
-      <div class="ingame-controls">
+      <div class="ingame-controls play-only">
         <button id="hintBtn" class="btn">💡 Hint</button>
         <button id="undoBtn" class="btn">↩ Takeback</button>
         <button id="flipBtn" class="btn">⟲ Flip</button>
@@ -46,9 +55,16 @@
         <button id="resignBtn" class="btn danger">⚑ Resign</button>
         <button id="reviewBtn" class="btn primary">🔍 Review</button>
       </div>
+
+      <div class="ingame-controls puzzle-only">
+        <button id="pzHint" class="btn">💡 Hint</button>
+        <button id="pzRetry" class="btn">↩ Retry</button>
+        <button id="pzSolution" class="btn">👁 Solution</button>
+        <button id="pzNext" class="btn primary">➡ Next puzzle</button>
+      </div>
     </section>
 
-    <aside class="sidebar">
+    <aside class="sidebar play-only">
       <div class="card">
         <h2>Opponent</h2>
         <div class="opp-line"><span id="oppRatingVal" class="opp-rating">800</span>
@@ -89,6 +105,30 @@
       <div class="card">
         <h2>Moves</h2>
         <div id="moveList" class="move-list"></div>
+      </div>
+    </aside>
+
+    <aside class="sidebar puzzle-only" id="puzzlePanel">
+      <div class="card">
+        <h2>Puzzle rating</h2>
+        <div class="opp-line"><span id="pzRating" class="opp-rating">800</span>
+          <span id="pzTag" class="tag">Casual</span></div>
+        <div id="pzRecord" class="playing-as">0 solved · 0 failed</div>
+        <div id="pzInfo" class="pz-info"></div>
+        <div id="pzThemes" class="pz-themes"></div>
+      </div>
+
+      <div class="card">
+        <h2>How it works</h2>
+        <p class="pz-help">Solve the tactic — play the best move for each turn.
+        Solving raises your puzzle rating; missing lowers it, so puzzles track your
+        level. Use <b>Hint</b> for the piece to move, <b>Solution</b> to reveal it,
+        or <b>Next</b> to skip.</p>
+      </div>
+
+      <div class="card">
+        <h2>Puzzle history</h2>
+        <div id="pzSparkline" class="sparkline"></div>
       </div>
     </aside>
   </main>
@@ -163,6 +203,7 @@
   <script src="js/analysis.js"></script>
   <script src="js/calibration.js"></script>
   <script src="js/board.js"></script>
+  <script src="js/puzzles.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>

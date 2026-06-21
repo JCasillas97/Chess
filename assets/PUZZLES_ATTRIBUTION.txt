@@ -1,0 +1,5 @@
+Puzzle data (assets/puzzles.json) is a sample derived from the Lichess
+puzzle database, which is released under Creative Commons CC0 (public domain).
+Source: https://database.lichess.org/  (lichess_db_puzzle)
+
+Each puzzle: id, FEN, solution moves (UCI), and a difficulty rating.

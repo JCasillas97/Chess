@@ -21,7 +21,13 @@
       losses: 0,
       draws: 0,
       history: [],        // [{ rating, opp, score, date }]
-      calibrated: false
+      calibrated: false,
+      // puzzle mode (independent rating that adapts as you solve/fail)
+      puzzleRating: 800,
+      puzzlesSolved: 0,
+      puzzlesFailed: 0,
+      puzzleHistory: [],  // [{ rating, puzzle, score, date }]
+      puzzleSeen: []      // recently shown puzzle ids (to avoid repeats)
     };
   }
 
@@ -86,6 +92,21 @@
     return clamp(Math.round(profile.rating + (offset || 0) + jitter), 250, 2800);
   }
 
+  // Records a solved (score 1) or failed (score 0) puzzle and updates the
+  // independent puzzle rating, so puzzles get harder as you improve.
+  var K_PUZZLE = 24;
+  function recordPuzzle(profile, puzzleRating, score) {
+    var before = profile.puzzleRating;
+    profile.puzzleRating = clamp(newRating(before, puzzleRating, score, K_PUZZLE), 100, 3200);
+    if (score === 1) profile.puzzlesSolved++; else profile.puzzlesFailed++;
+    profile.puzzleHistory.push({
+      rating: profile.puzzleRating, puzzle: puzzleRating, score: score, date: Date.now()
+    });
+    if (profile.puzzleHistory.length > 500) profile.puzzleHistory = profile.puzzleHistory.slice(-500);
+    saveProfile(profile);
+    return { before: before, after: profile.puzzleRating, delta: profile.puzzleRating - before };
+  }
+
   global.Rating = {
     loadProfile: loadProfile,
     saveProfile: saveProfile,
@@ -95,7 +116,9 @@
     newRating: newRating,
     recordGame: recordGame,
     matchmake: matchmake,
+    recordPuzzle: recordPuzzle,
     K_CALIBRATION: K_CALIBRATION,
-    K_NORMAL: K_NORMAL
+    K_NORMAL: K_NORMAL,
+    K_PUZZLE: K_PUZZLE
   };
 })(window);

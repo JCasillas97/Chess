@@ -30,6 +30,8 @@
     global.addEventListener('pointerup', onPointerUp);
   }
 
+  // Swap the active controller (play vs puzzle) without re-binding listeners.
+  function setOpts(o) { opts = o; selected = null; legalCache = []; hintMove = null; lastMove = null; }
   function setOrientation(o) { orientation = o; render(); }
   function getOrientation() { return orientation; }
   function flip() { setOrientation(orientation === 'w' ? 'b' : 'w'); }
@@ -207,6 +209,7 @@
 
   global.Board = {
     init: init,
+    setOpts: setOpts,
     render: render,
     setOrientation: setOrientation,
     getOrientation: getOrientation,

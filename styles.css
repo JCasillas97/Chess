@@ -45,6 +45,32 @@ body {
   box-shadow: var(--shadow); position: sticky; top: 0; z-index: 20;
 }
 .topbar h1 { font-size: 18px; margin: 0; flex: 0 0 auto; }
+
+/* mode tabs */
+.tabs { display: flex; gap: 8px; justify-content: center; padding: 8px; background: var(--panel); box-shadow: var(--shadow); }
+.tab {
+  padding: 8px 18px; border: none; background: transparent; color: var(--muted);
+  font-size: 15px; font-weight: 700; cursor: pointer; border-radius: 9px;
+}
+.tab:hover { background: var(--line); }
+.tab.active { background: var(--accent); color: #fff; }
+
+/* mode visibility */
+body:not(.mode-puzzle) .puzzle-only { display: none !important; }
+body.mode-puzzle .play-only { display: none !important; }
+body.mode-puzzle #evalBarWrap { display: none !important; }
+
+/* puzzle UI */
+.pz-banner { display: flex; flex-direction: column; gap: 3px; margin: 8px 2px; min-height: 40px; }
+.pz-objective { font-weight: 700; }
+.pz-feedback { font-size: 14px; min-height: 18px; font-weight: 600; }
+.pz-feedback.good { color: var(--accent-d); }
+.pz-feedback.bad { color: var(--danger); }
+.pz-info { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.pz-themes { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.pz-help { font-size: 13px; color: var(--muted); line-height: 1.45; margin: 0; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn:disabled:hover { background: var(--panel); }
 .me { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .me-rating { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
 .me-rating span { font-size: 22px; font-weight: 700; }

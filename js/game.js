@@ -16,6 +16,7 @@
   var mode = 'normal';            // 'normal' | 'calibration'
   var gameOver = false;
   var thinking = false;
+  var boardActive = true;         // false while Puzzle mode owns the board
 
   var sans = [];                  // SAN per ply
   var fens = [game.fen()];        // position after each ply (fens[0] = start)
@@ -161,12 +162,13 @@
   }
 
   function engineMove() {
-    if (gameOver) return;
+    if (gameOver || !boardActive) return;
     setThinking(true, 'Opponent is thinking…');
     var cfg = Difficulty.ratingToConfig(oppRating);
     var fen = game.fen();
 
     var applyUci = function (uci) {
+      if (!boardActive) { setThinking(false); return; } // switched to puzzles
       var move = null;
       if (uci) {
         move = game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] || 'q' });
@@ -182,6 +184,7 @@
       // deliberate weak move — select AND apply together after a short delay so
       // the engine doesn't move instantly (and game state never desyncs).
       setTimeout(function () {
+        if (!boardActive) { setThinking(false); return; }
         var m = randomMove();
         setThinking(false);
         if (m) commitMove(m);
@@ -636,12 +639,43 @@
   function openPanel() { $('settingsPanel').classList.add('open'); }
   function closePanel() { $('settingsPanel').classList.remove('open'); }
 
+  /* ----------------------------------------------------------- mode switch */
+  function enterPuzzleMode() {
+    if (Puzzles.isActive()) return;
+    boardActive = false;
+    setThinking(false);
+    document.body.classList.add('mode-puzzle');
+    $('tabPuzzles').classList.add('active');
+    $('tabPlay').classList.remove('active');
+    Board.setOpts(Puzzles.boardOpts);
+    Puzzles.enter();
+  }
+  function enterPlayMode() {
+    if (!Puzzles.isActive()) return;
+    Puzzles.exit();
+    boardActive = true;
+    document.body.classList.remove('mode-puzzle');
+    $('tabPlay').classList.add('active');
+    $('tabPuzzles').classList.remove('active');
+    Board.setOpts(boardOpts);
+    Board.setOrientation(playerColor);
+    Board.setLastMove(lastMove);
+    Board.setHint(null);
+    Board.render();
+    updateEvalBar();
+    if (!gameOver && game.turn() !== playerColor) engineMove();
+  }
+
   /* ----------------------------------------------------------- wire up */
   function bind() {
     Board.init($('board'), boardOpts);
+    Puzzles.bind();
     bindSettings();
     applyTheme();
     applyFeatureVisibility();
+
+    $('tabPlay').addEventListener('click', enterPlayMode);
+    $('tabPuzzles').addEventListener('click', enterPuzzleMode);
 
     $('playNext').addEventListener('click', playNext);
     $('newGameBtn').addEventListener('click', function () {

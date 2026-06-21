@@ -26,6 +26,11 @@ engine.
 - **Post-game review:** accuracy % for both sides, per-move labels
   (Best / Good / Inaccuracy / Mistake / Blunder), a **replay** stepper with the
   evaluation at every move, and **opening name** detection.
+- **Puzzle mode** with its own **adaptive puzzle rating** — solve tactics from the
+  bundled Lichess set; solving raises your puzzle rating and missing lowers it, so
+  the puzzles get harder as you improve and easier when you slip. Hint / Retry /
+  Show-solution / Next, with a puzzle-rating history graph. Switch via the
+  **Play / Puzzles** tabs.
 - **Feel:** sounds, light/dark mode, several board themes, resign & draw offer,
   legal-move dots, captured pieces, move list, board flip, promotion picker.
 
