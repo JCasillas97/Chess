@@ -1,0 +1,4 @@
+Chess piece images: "cburnett" set by Colin M.L. Burnett.
+Source: https://github.com/lichess-org/lila (public/piece/cburnett)
+Also on Wikimedia Commons.
+License: GNU General Public License v2 or later (GPLv2+).

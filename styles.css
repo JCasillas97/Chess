@@ -91,15 +91,16 @@ body {
 .sq.last { box-shadow: inset 0 0 0 9999px var(--last); }
 .sq.hint { box-shadow: inset 0 0 0 9999px var(--hint); }
 .sq.check { box-shadow: inset 0 0 0 9999px rgba(220,40,40,.5); }
-.sq .pc { position: relative; z-index: 2; cursor: grab; line-height: 1; }
-/* Major pieces are bumped up; pawns stay at their original size. The glyphs
-   now carry their own color, so these rules mainly add a contrast outline so
-   white pieces read on light squares and black pieces read on dark squares. */
-.sq .pc { font-size: 1.13em; }
-.sq .pc.type-p { font-size: 0.92em; }
-.pc-w { color: #f7f7f7; text-shadow: 0 0 2px #000, 0 1px 2px rgba(0,0,0,.55); }
-.pc-b { color: #2b2b2b; text-shadow: 0 0 2px rgba(255,255,255,.85); }
-body.dark .pc-b { color: #111; }
+/* Pieces are cburnett SVG images sized to the square; the SVG art is already
+   proportioned (pawns naturally smaller than the major pieces). */
+.pc {
+  width: 94%; height: 94%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  position: relative; z-index: 2; cursor: grab;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+}
 .pc.dragging { cursor: grabbing; }
 
 .sq.target::after {
@@ -131,9 +132,11 @@ body.dark .pc-b { color: #111; }
 
 .captured-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 22px; margin: 2px; }
 .cap-label { font-size: 11px; color: var(--muted); }
-.captured { font-size: 18px; letter-spacing: -2px; }
-.cap-w { color: #f7f7f7; text-shadow: 0 0 1px #000, 0 0 2px #000; }
-.cap-b { color: #2b2b2b; }
+.captured { display: inline-flex; flex-wrap: wrap; gap: 1px; }
+.cap {
+  display: inline-block; width: 18px; height: 18px; vertical-align: middle;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+}
 .opening { font-size: 13px; color: var(--accent-d); font-weight: 600; min-height: 18px; margin: 2px; }
 
 .ingame-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
@@ -180,8 +183,9 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 }
 .promo-overlay.open { display: flex; }
 .promo-btn {
-  width: 64px; height: 64px; font-size: 40px; border-radius: 10px;
-  border: none; cursor: pointer; background: var(--panel); box-shadow: var(--shadow);
+  width: 64px; height: 64px; border-radius: 10px;
+  border: none; cursor: pointer; background-color: var(--panel); box-shadow: var(--shadow);
+  background-repeat: no-repeat; background-position: center; background-size: 80%;
 }
 
 /* ----------------------------------------------------------- modal */

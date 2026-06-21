@@ -7,12 +7,10 @@
 (function (global) {
   'use strict';
 
-  // Use the distinct white (U+2654-2659) and black (U+265A-265F) code points so
-  // the color is carried by the glyph itself — iOS/Safari ignores CSS color on
-  // the solid chess characters, so a single recolored set renders all-dark.
-  // The trailing ︎ forces text (non-emoji) presentation.
-  var WHITE_GLYPH = { k: '♔︎', q: '♕︎', r: '♖︎', b: '♗︎', n: '♘︎', p: '♙︎' };
-  var BLACK_GLYPH = { k: '♚︎', q: '♛︎', r: '♜︎', b: '♝︎', n: '♞︎', p: '♟︎' };
+  // Pieces are rendered as cburnett SVG images (solid, filled, identical on
+  // every device) rather than Unicode glyphs, which iOS draws hollow/all-dark.
+  var PIECE_DIR = 'assets/pieces/';
+  function pieceUrl(color, type) { return PIECE_DIR + color + type.toUpperCase() + '.svg'; }
   var FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
   var el, opts;
@@ -82,8 +80,8 @@
       var p = pieceAt[s.square];
       var inner = '';
       if (p) {
-        var glyph = (p.color === 'w' ? WHITE_GLYPH : BLACK_GLYPH)[p.type];
-        inner = '<span class="pc pc-' + p.color + ' type-' + p.type + '">' + glyph + '</span>';
+        inner = '<span class="pc pc-' + p.color + ' type-' + p.type +
+          '" style="background-image:url(\'' + pieceUrl(p.color, p.type) + '\')"></span>';
       }
       // coordinate labels on edge squares
       var coords = '';
