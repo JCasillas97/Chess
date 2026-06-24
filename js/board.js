@@ -21,6 +21,7 @@
   var hintMove = null;       // {from, to}
   var dragEl = null, dragging = false, dragStart = null, downXY = null;
   var suppressAnim = false;  // skip the slide animation for the next render (drag drops)
+  var ANIM_MS = 320;         // piece slide duration
 
   function init(container, options) {
     el = container;
@@ -71,15 +72,23 @@
     if (!size) return;
     var a = squareScreen(spec.from), b = squareScreen(spec.to);
     var dx = (a.col - b.col) * size, dy = (a.row - b.row) * size;
+    // Put the piece at its origin square with no transition...
     pcEl.style.transition = 'none';
     pcEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
     pcEl.style.zIndex = '5';
-    void pcEl.offsetWidth; // force reflow so the start transform is applied
-    pcEl.style.transition = 'transform 0.26s ease-out';
-    pcEl.style.transform = 'translate(0,0)';
+    // ...then, on the next two frames, enable the transition and move it home.
+    // Double rAF is reliable on iOS Safari where the offsetWidth reflow hack
+    // is sometimes optimized away (causing the snap/inconsistency).
+    var raf = global.requestAnimationFrame || function (f) { return setTimeout(f, 16); };
+    raf(function () {
+      raf(function () {
+        pcEl.style.transition = 'transform ' + ANIM_MS + 'ms cubic-bezier(.22,.61,.36,1)';
+        pcEl.style.transform = 'translate(0,0)';
+      });
+    });
     setTimeout(function () {
       if (pcEl) { pcEl.style.transition = ''; pcEl.style.transform = ''; pcEl.style.zIndex = ''; }
-    }, 320);
+    }, ANIM_MS + 80);
   }
 
   function render(animateSpec) {
@@ -244,6 +253,7 @@
     init: init,
     setOpts: setOpts,
     render: render,
+    ANIM_MS: ANIM_MS,
     setOrientation: setOrientation,
     getOrientation: getOrientation,
     flip: flip,

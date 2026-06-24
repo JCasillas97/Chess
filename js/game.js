@@ -170,8 +170,15 @@
     var cfg = Difficulty.ratingToConfig(oppRating);
     var fen = game.fen();
     var mySeq = engineSeq; // if this changes (e.g. takeback), drop this move
+    var t0 = Date.now();   // engineMove runs right after the player's move
+    // don't render the reply until the player's slide animation has finished
+    var gap = (Board.ANIM_MS || 320) + 60;
 
     var stale = function () { return !boardActive || mySeq !== engineSeq; };
+    var afterSlide = function (fn) {
+      var rem = gap - (Date.now() - t0);
+      if (rem > 0) setTimeout(fn, rem); else fn();
+    };
 
     var applyUci = function (uci) {
       if (stale()) { return; } // switched modes or taken back
@@ -188,20 +195,20 @@
 
     if (Math.random() < cfg.blunderProb) {
       // deliberate weak move — select AND apply together after a short delay so
-      // the engine doesn't move instantly (and game state never desyncs).
+      // the engine doesn't move instantly (and the player's slide can finish).
       setTimeout(function () {
         if (stale()) return;
         var m = randomMove();
         setThinking(false);
         if (m) commitMove(m);
-      }, 180);
+      }, gap);
       return;
     }
 
     Engine.getBestMove(fen, cfg).then(function (res) {
-      applyUci(res.bestmove);
+      afterSlide(function () { applyUci(res.bestmove); });
     }).catch(function () {
-      applyUci(null);
+      afterSlide(function () { applyUci(null); });
     });
   }
 

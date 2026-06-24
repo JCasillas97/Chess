@@ -172,7 +172,7 @@
       solIdx++;
       if (solIdx >= cur.moves.length) { finishSolved(); return; }
 
-      // opponent's reply, played for you
+      // opponent's reply, played for you (wait for the solver's slide to finish)
       busy = true;
       feedback('Best move! Keep going…', 'good');
       setTimeout(function () {
@@ -181,7 +181,7 @@
         Board.render(rm ? { from: rm.from, to: rm.to } : null);
         busy = false;
         if (solIdx >= cur.moves.length) finishSolved();
-      }, 350);
+      }, (Board.ANIM_MS || 320) + 80);
     };
 
     if (isPromotion(from, to)) promptPromotion(solverColor, apply);
