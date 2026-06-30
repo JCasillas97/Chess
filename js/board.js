@@ -20,7 +20,9 @@
   var lastMove = null;       // {from, to}
   var hintMove = null;       // {from, to}
   var dragEl = null, dragging = false, dragStart = null, downXY = null;
+  var dragHiddenEl = null;   // the piece element hidden while dragging
   var suppressAnim = false;  // skip the slide animation for the next render (drag drops)
+  var animating = {};        // squares whose piece is mid-slide (kept hidden across re-renders)
   var ANIM_MS = 320;         // piece slide duration
 
   function init(container, options) {
@@ -63,32 +65,60 @@
       : { col: 7 - f, row: rank - 1 };
   }
 
-  // Slide the piece now sitting on spec.to in from its old square (spec.from).
+  // Slide a floating clone from spec.from to spec.to, like the drag ghost. This
+  // is robust against board re-renders (the clone lives on document.body), so
+  // every move animates consistently — unlike transforming the rebuilt element,
+  // which iOS Safari intermittently skips.
   function animateMove(spec) {
     if (!spec || !spec.from || !spec.to || spec.from === spec.to) return;
     var pcEl = el.querySelector('[data-square="' + spec.to + '"] .pc');
     if (!pcEl) return;
-    var size = el.clientWidth / 8;
+    var rect = el.getBoundingClientRect();
+    var size = rect.width / 8;
     if (!size) return;
     var a = squareScreen(spec.from), b = squareScreen(spec.to);
-    var dx = (a.col - b.col) * size, dy = (a.row - b.row) * size;
-    // Put the piece at its origin square with no transition...
-    pcEl.style.transition = 'none';
-    pcEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-    pcEl.style.zIndex = '5';
-    // ...then, on the next two frames, enable the transition and move it home.
-    // Double rAF is reliable on iOS Safari where the offsetWidth reflow hack
-    // is sometimes optimized away (causing the snap/inconsistency).
+
+    var pad = size * 0.03;     // pieces render at ~94% of the square, centered
+    var pSize = size * 0.94;
+    var clone = pcEl.cloneNode(true);
+    clone.className += ' anim-ghost';
+    clone.style.position = 'fixed';
+    clone.style.pointerEvents = 'none';
+    clone.style.zIndex = '900';
+    clone.style.margin = '0';
+    clone.style.width = pSize + 'px';
+    clone.style.height = pSize + 'px';
+    clone.style.left = (rect.left + a.col * size + pad) + 'px';
+    clone.style.top = (rect.top + a.row * size + pad) + 'px';
+    clone.style.transition = 'none';
+    clone.style.transform = 'translate(0,0)';
+    document.body.appendChild(clone);
+
+    // hide the real destination piece (kept hidden across re-renders) until the
+    // ghost arrives
+    animating[spec.to] = true;
+    pcEl.style.visibility = 'hidden';
+
+    var finished = false;
+    var finish = function () {
+      if (finished) return;
+      finished = true;
+      if (clone.parentNode) clone.parentNode.removeChild(clone);
+      delete animating[spec.to];
+      var real = el.querySelector('[data-square="' + spec.to + '"] .pc');
+      if (real) real.style.visibility = '';
+    };
+
     var raf = global.requestAnimationFrame || function (f) { return setTimeout(f, 16); };
     raf(function () {
       raf(function () {
-        pcEl.style.transition = 'transform ' + ANIM_MS + 'ms cubic-bezier(.22,.61,.36,1)';
-        pcEl.style.transform = 'translate(0,0)';
+        clone.style.transition = 'transform ' + ANIM_MS + 'ms cubic-bezier(.22,.61,.36,1)';
+        clone.style.transform = 'translate(' + ((b.col - a.col) * size) + 'px,' +
+          ((b.row - a.row) * size) + 'px)';
       });
     });
-    setTimeout(function () {
-      if (pcEl) { pcEl.style.transition = ''; pcEl.style.transform = ''; pcEl.style.zIndex = ''; }
-    }, ANIM_MS + 80);
+    clone.addEventListener('transitionend', finish);
+    setTimeout(finish, ANIM_MS + 140); // fallback if transitionend doesn't fire
   }
 
   function render(animateSpec) {
@@ -121,8 +151,10 @@
       var p = pieceAt[s.square];
       var inner = '';
       if (p) {
+        // keep a piece hidden while its arrival is still being animated
+        var hide = animating[s.square] ? 'visibility:hidden;' : '';
         inner = '<span class="pc pc-' + p.color + ' type-' + p.type +
-          '" style="background-image:url(\'' + pieceUrl(p.color, p.type) + '\')"></span>';
+          '" style="' + hide + 'background-image:url(\'' + pieceUrl(p.color, p.type) + '\')"></span>';
       }
       // coordinate labels on edge squares
       var coords = '';
@@ -198,6 +230,7 @@
     document.body.appendChild(dragEl);
     positionDrag(e.clientX, e.clientY);
     cell.style.visibility = 'hidden';
+    dragHiddenEl = cell;
   }
 
   function positionDrag(x, y) {
@@ -216,7 +249,8 @@
     if (!dragStart) return;
     if (!dragging && downXY) {
       var dx = e.clientX - downXY.x, dy = e.clientY - downXY.y;
-      if (dx * dx + dy * dy > 36) dragging = true;
+      // ~11px threshold so a normal tap that wiggles is still a tap (and animates)
+      if (dx * dx + dy * dy > 121) dragging = true;
     }
     if (dragging) { positionDrag(e.clientX, e.clientY); e.preventDefault(); }
   }
@@ -244,9 +278,8 @@
     dragging = false;
     dragStart = null;
     downXY = null;
-    // restore any hidden piece
-    var hidden = el.querySelectorAll('.pc[style*="hidden"]');
-    for (var i = 0; i < hidden.length; i++) hidden[i].style.visibility = '';
+    // restore exactly the piece we hid for the drag (don't touch animating pieces)
+    if (dragHiddenEl) { dragHiddenEl.style.visibility = ''; dragHiddenEl = null; }
   }
 
   global.Board = {
